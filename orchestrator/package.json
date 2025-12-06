@@ -1,0 +1,27 @@
+{
+  "name": "orchestrator",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/jf-hurtado/orchestrator#readme",
+  "bugs": {
+    "url": "https://github.com/jf-hurtado/orchestrator/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jf-hurtado/orchestrator.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "mongoose": "^9.0.1",
+    "node-fetch": "^2.7.0"
+  }
+}
