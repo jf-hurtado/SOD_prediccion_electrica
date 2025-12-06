@@ -1,0 +1,52 @@
+services:
+  # Contenedor para la base de datos MongoDB
+  mongo:
+    image: mongo:7.0
+    container_name: mongo
+    restart: unless-stopped
+    ports:
+      - "27018:27017" # Opcional: para acceder con Compass desde tu máquina
+    volumes:
+      - mongo-data:/data/db
+
+  # Microservicio ACQUIRE
+  acquire:
+    build: ./acquire
+    container_name: acquire
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    env_file: .env.docker
+    ports:
+      - "3001:3001"
+    environment: # Sobreescribimos la variable MONGO_URI solo para este servicio
+      - MONGO_URI=mongodb://mongo:27017/acquire_db
+
+  # Microservicio PREDICT
+  predict:
+    build: ./predict
+    container_name: predict
+    restart: unless-stopped
+    depends_on:
+      - mongo
+    env_file: .env.docker
+    ports:
+      - "3002:3002"
+    environment: # Sobreescribimos la variable MONGO_URI solo para este servicio
+      - MONGO_URI=mongodb://mongo:27017/predict_db
+
+  # Microservicio ORCHESTRATOR
+  orchestrator:
+    build: ./orchestrator
+    container_name: orchestrator
+    restart: unless-stopped
+    depends_on:
+      - acquire
+      - predict
+    env_file: .env.docker
+    ports:
+      - "8080:8080"
+
+# Volumen para persistir los datos de MongoDB
+volumes:
+  mongo-data:
