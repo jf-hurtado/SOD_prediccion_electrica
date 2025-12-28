@@ -9,9 +9,9 @@ const connectDB = async () => {
 };
 
 const formatData = (data, targetDate) => {
-    const consumo_t0 = data.result.values[0][2]
-    const consumo_t1 = data.result.values[1][2]
-    const consumo_t2 = data.result.values[2][2]
+    const consumo_t0 = data.result.values[0][2];
+    const consumo_t1 = data.result.values[1][2];
+    const consumo_t2 = data.result.values[2][2];
 
     const currentDate = new Date();
     const createdAt = currentDate.toISOString();
