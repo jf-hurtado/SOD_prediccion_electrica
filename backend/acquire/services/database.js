@@ -9,63 +9,62 @@ const connectDB = async () => {
 };
 
 const formatData = (data, targetDate) => {
-    const consumo_t0 = data.result.values[0][2];
-    const consumo_t1 = data.result.values[1][2];
-    const consumo_t2 = data.result.values[2][2];
 
-    const currentDate = new Date();
-    const createdAt = currentDate.toISOString();
+    if (!data.result || !Array.isArray(data.result.values) || data.result.values.length === 0 || data.result.values[0].length === 0) {
+        throw new Error("La respuesta de la API externa no contiene datos de consumo válidos.");
+    }
 
-    const targetHour = targetDate.toTimeString().split(':')[0];
+    const values = data.result.values;
+
+    // Consumos
+    const dailyValues = values.map(dayData => dayData[2])
+    // Fechas
+    const dateObjects = values.map(dayData => new Date(dayData[0]));
+    // Dia del mes    
+    const daysUsed = dateObjects.map(date => date.getDate());
+    // Metadatos
+    const alias = values[0][5];
+    const name = values[0][11];
+
+    // Fecha objetivo
+    const targetHour = parseInt(targetDate.toTimeString().split(':')[0]);
     const targetWeekDay = targetDate.getDay();
     const targetMonth = targetDate.getMonth() + 1;
     const targetDay = targetDate.getDate();
 
-    const alias = data.result.values[0][5];
-    const name = data.result.values[0][11];
+    // Consumos para predict
+    const consumptionFeatures = [
+        dailyValues[0] || 0, // Si no existe, usa 0
+        dailyValues[1] || 0, // Si no existe, usa 0
+        dailyValues[2] || 0  // Si no existe, usa 0
+    ];
 
-    const day0Date = new Date(data.result.values[0][0]);
-    const day1Date = new Date(data.result.values[1][0]);
-    const day2Date = new Date(data.result.values[2][0]);
+    // Fechas para predict
+    const dateFeatures = [
+        targetHour,
+        targetWeekDay,
+        targetMonth,
+        targetDay
+    ];
 
-    const day0 = day0Date.getDate();
-    const day1 = day1Date.getDate();
-    const day2 = day2Date.getDate();
-
-    const startDate = data.result.values[2][0];
-    const endDate = data.result.values[0][0];
+    // Features
+    const features = [consumptionFeatures, dateFeatures]
 
     const formatedData = {
-        features: [
-            consumo_t0,
-            consumo_t1,
-            consumo_t2,
-            targetHour,
-            targetWeekDay,
-            targetMonth,
-            targetDay
-        ],
-        featureCount: 7,
+        features: features,
+        featureCount: features.length,
         scalerVersion: "v1",
-        createdAt: createdAt,
+        createdAt: new Date().toISOString(), 
         targetDate: targetDate,
-        dailyValues: [
-            consumo_t0,
-            consumo_t1,
-            consumo_t2
-        ],
+        dailyValues: dailyValues, 
         kunnaMeta: {
             alias: alias,
             name: name,
-            daysUsed: [
-                day0,
-                day1,
-                day2
-            ]
+            daysUsed: daysUsed 
         },
         fetchMeta: {
-            timeStart: startDate,
-            timeEnd: endDate    
+            timeStart: values[values.length - 1][0], 
+            timeEnd: values[0][0]    
         },
         source: "acquire"
     };

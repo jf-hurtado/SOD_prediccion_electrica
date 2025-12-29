@@ -20,6 +20,8 @@ services:
       - "${HOST_ACQUIRE_PORT}:3001"
     environment: # Sobreescribimos la variable MONGO_URI solo para este servicio
       - MONGO_URI=${MONGO_URI_BASE}/acquire_db
+      - KUNNA_URL=${KUNNA_URL}
+      - PORT=3001
 
   # Microservicio PREDICT
   predict:
@@ -32,6 +34,7 @@ services:
       - "${HOST_PREDICT_PORT}:3002"
     environment: # Sobreescribimos la variable MONGO_URI solo para este servicio
       - MONGO_URI=${MONGO_URI_BASE}/predict_db
+      - PORT=3002
 
   # Microservicio ORCHESTRATOR
   orchestrator:
@@ -46,6 +49,7 @@ services:
     environment:
       - ACQUIRE_SERVICE_URL=http://acquire:3001
       - PREDICT_SERVICE_URL=http://predict:3002
+      - PORT=8080
 
 # Volumen para persistir los datos de MongoDB
 volumes:
