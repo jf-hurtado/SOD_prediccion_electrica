@@ -17,7 +17,7 @@ const getDates = () => {
     if (madridHour >= 23){
         targetDate.setDate(now.getDate() + 1);
     }
-    console.log(`[ACQUIRE DATE] La fecha objetivo es ${targetDate.toLocaleDateString()}`);
+    console.log(`[ACQUIRE] La fecha objetivo es ${targetDate.toLocaleDateString()}`);
 
     const endDate = new Date(targetDate);
     endDate.setDate(targetDate.getDate() - 1);
@@ -38,8 +38,11 @@ const getDataKunna = async () => {
     }
 
     const body = {
-        "time_start": startDateForApi,
-        "time_end": endDateForApi,
+        //"time_start": startDateForApi,
+        //"time_end": endDateForApi,
+
+        "time_start": "2025-11-24T05:18:38Z",
+        "time_end": "2025-11-27T05:18:38Z",
 
             "filters": [
             {
