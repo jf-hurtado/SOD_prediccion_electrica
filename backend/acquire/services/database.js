@@ -48,7 +48,7 @@ const formatData = (data, targetDate) => {
     ];
 
     // Features
-    const features = [consumptionFeatures, dateFeatures]
+    const features = [...consumptionFeatures, ...dateFeatures]
 
     const formatedData = {
         features: features,

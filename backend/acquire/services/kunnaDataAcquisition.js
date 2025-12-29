@@ -38,8 +38,11 @@ const getDataKunna = async () => {
     }
 
     const body = {
-        "time_start": startDateForApi,
-        "time_end": endDateForApi,
+        //"time_start": startDateForApi,
+        //"time_end": endDateForApi,
+
+        "time_start": "2025-11-24T05:18:38Z",
+        "time_end": "2025-11-27T05:18:38Z",
 
             "filters": [
             {
