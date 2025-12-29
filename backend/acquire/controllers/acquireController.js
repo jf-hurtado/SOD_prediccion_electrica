@@ -18,21 +18,21 @@ const data = async (req, res) => {
     let savedData;
 
     try {
-        console.log('[ACQUIRE DATA] Accediendo a la API externa (kunna)')
+        console.log('[ACQUIRE] Accediendo a la API externa (kunna)')
         const result = await getDataKunna();
         apiData = result.apiData;
         targetDate = result.targetDate;
 
     } catch(err) {
-        console.error('[ACQUIRE DATA] Error al obtener datos de Kunna', err);
+        console.error('[ACQUIRE] Error al obtener datos de Kunna', err);
         return res.status(500).json({error: 'Error interno  al obtener los datos de kunna'});
     }
 
     try{
         savedData = await database.saveData(apiData, targetDate);
-        console.log('[ACQUIRE DATA] Datos guardados con éxito en la DB');
+        console.log('[ACQUIRE] Datos guardados con éxito en la DB');
     } catch(err) {
-        console.error('[ACQUIRE DATA] Error al guardar los datos de kunna en la DB', err);
+        console.error('[ACQUIRE] Error al guardar los datos de kunna en la DB', err);
         return res.status(500).json({error: 'Error interno en el guardado de datos de kunna en la DB'})
     }
 

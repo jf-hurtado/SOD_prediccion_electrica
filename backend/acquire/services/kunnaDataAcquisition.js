@@ -17,7 +17,7 @@ const getDates = () => {
     if (madridHour >= 23){
         targetDate.setDate(now.getDate() + 1);
     }
-    console.log(`[ACQUIRE DATE] La fecha objetivo es ${targetDate.toLocaleDateString()}`);
+    console.log(`[ACQUIRE] La fecha objetivo es ${targetDate.toLocaleDateString()}`);
 
     const endDate = new Date(targetDate);
     endDate.setDate(targetDate.getDate() - 1);

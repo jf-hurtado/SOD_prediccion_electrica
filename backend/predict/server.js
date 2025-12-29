@@ -39,7 +39,7 @@ const startServer = async () => {
       }
     });
   } catch(err) {
-    console.log(`[DB] Error conectandose con la DB`, err);
+    console.log(`[PREDICT] Error conectandose con la DB`, err);
     process.exit(1);
   }
       
