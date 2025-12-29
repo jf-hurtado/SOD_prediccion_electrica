@@ -5,47 +5,47 @@ services:
     container_name: mongo
     restart: unless-stopped
     ports:
-      - "27018:27017" # Opcional: para acceder con Compass desde tu máquina
+      - "${HOST_MONGO_PORT}:27017" # Opcional: para acceder con Compass desde tu máquina
     volumes:
       - mongo-data:/data/db
 
   # Microservicio ACQUIRE
   acquire:
-    build: ./acquire
+    build: ./backend/acquire
     container_name: acquire
     restart: unless-stopped
     depends_on:
       - mongo
-    env_file: .env.docker
     ports:
-      - "3001:3001"
+      - "${HOST_ACQUIRE_PORT}:3001"
     environment: # Sobreescribimos la variable MONGO_URI solo para este servicio
-      - MONGO_URI=mongodb://mongo:27017/acquire_db
+      - MONGO_URI=${MONGO_URI_BASE}/acquire_db
 
   # Microservicio PREDICT
   predict:
-    build: ./predict
+    build: ./backend/predict
     container_name: predict
     restart: unless-stopped
     depends_on:
       - mongo
-    env_file: .env.docker
     ports:
-      - "3002:3002"
+      - "${HOST_PREDICT_PORT}:3002"
     environment: # Sobreescribimos la variable MONGO_URI solo para este servicio
-      - MONGO_URI=mongodb://mongo:27017/predict_db
+      - MONGO_URI=${MONGO_URI_BASE}/predict_db
 
   # Microservicio ORCHESTRATOR
   orchestrator:
-    build: ./orchestrator
+    build: ./backend/orchestrator
     container_name: orchestrator
     restart: unless-stopped
     depends_on:
       - acquire
       - predict
-    env_file: .env.docker
     ports:
-      - "8080:8080"
+      - "${HOST_ORCHESTRATOR_PORT}:8080"
+    environment:
+      - ACQUIRE_SERVICE_URL=http://acquire:3001
+      - PREDICT_SERVICE_URL=http://predict:3002
 
 # Volumen para persistir los datos de MongoDB
 volumes:
