@@ -1,10 +1,11 @@
-# ---- Fase 1: La Receta del Servidor Nginx ----
-
-# Usamos la imagen oficial de Nginx, versión 'stable-alpine'.
-# 'alpine' significa que es una versión ultra-ligera, lo que es una buena práctica.
+# Usamos la imagen oficial y ligera de Nginx
 FROM nginx:stable-alpine
 
-# Nginx, por defecto, busca archivos para servir en la carpeta /usr/share/nginx/html.
-# Este comando copia TODO el contenido de nuestra carpeta actual (el '.')
-# (index.html, style.css, script.js) a esa carpeta mágica dentro del contenedor.
+# 1. Borramos la configuración por defecto de Nginx
+RUN rm /etc/nginx/conf.d/default.conf
+
+# 2. Copiamos nuestro archivo de configuración personalizado
+COPY nginx.conf /etc/nginx/conf.d/
+
+# 3. Copiamos nuestros archivos estáticos a la carpeta de servicio
 COPY . /usr/share/nginx/html
