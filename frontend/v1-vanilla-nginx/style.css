@@ -1,0 +1,9 @@
+#result {
+    font-family: monospace;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    padding: 15px;
+    white-space: pre-wrap; /* Mantiene los saltos de línea y espacios del JSON */
+    word-wrap: break-word; /* Evita que el texto se desborde */
+}

@@ -9,6 +9,7 @@ services:
     volumes:
       - mongo-data:/data/db
 
+  # --- BACKEND ---
   # Microservicio ACQUIRE
   acquire:
     build: ./backend/acquire
@@ -50,6 +51,14 @@ services:
       - ACQUIRE_SERVICE_URL=http://acquire:3001
       - PREDICT_SERVICE_URL=http://predict:3002
       - PORT=8080
+
+  # --- FRONTEND ---
+  frontend:
+    build: ./frontend/v1-vanilla-nginx # "Usa la receta de la carpeta v1"
+    container_name: frontend
+    restart: unless-stopped
+    ports:
+      - "80:80" # Mapea el puerto 80 (HTTP) de tu PC al puerto 80 de Nginx 
 
 # Volumen para persistir los datos de MongoDB
 volumes:
