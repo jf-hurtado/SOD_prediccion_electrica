@@ -53,12 +53,21 @@ services:
       - PORT=8080
 
   # --- FRONTEND ---
-  frontend:
-    build: ./frontend/v1-vanilla-nginx # "Usa la receta de la carpeta v1"
-    container_name: frontend
-    restart: unless-stopped
+    # Opción 1: Levantar la versión de Vanilla JS + Nginx (comentada por ahora)
+  # frontend:
+  #   build: ./frontend/v1-vanilla-nginx # "Usa la receta de la carpeta v1"
+  #   container_name: frontend
+  #   restart: unless-stopped
+  #   ports:
+  #     - "80:80" # Mapea el puerto 80 (HTTP) de tu PC al puerto 80 de Nginx 
+
+  frontend-react:
+    build: ./frontend/v2-react-spa
+    container_name: frontend-react
     ports:
-      - "80:80" # Mapea el puerto 80 (HTTP) de tu PC al puerto 80 de Nginx 
+      - "80:80" # Seguimos usando el puerto 80 para acceder desde http://localhost
+    depends_on:
+      - orchestrator
 
 # Volumen para persistir los datos de MongoDB
 volumes:
