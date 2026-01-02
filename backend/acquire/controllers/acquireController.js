@@ -2,6 +2,8 @@
 const database = require('../services/database');
 const { getDataKunna } = require('../services/kunnaDataAcquisition');
 const { z } = require('zod');
+const rootLogger = require('../services/logger');
+const logger = rootLogger.child({service: 'acquire-controller'});
 
 // Definimos el "contrato" para el body de la petición /data
 const dataRequestSchema = z.object({
@@ -28,7 +30,7 @@ const calculateDefaultTargetDate = () => {
     if (madridHour >= 23){
         targetDate.setDate(now.getDate() + 1);
     }
-    console.log(`[ACQUIRE] (Default) La fecha objetivo es ${targetDate.toLocaleDateString()}`);
+    logger.info(`(Default) La fecha objetivo es ${targetDate.toLocaleDateString()}`);
     return targetDate; 
 };
 
@@ -47,21 +49,21 @@ const data = async (req, res) => {
         // 2. LÓGICA DE DECISIÓN DE FECHA
         let targetDate;
         if (requestedDateString) {
-            console.log(`[ACQUIRE] Usando fecha objetivo proporcionada: ${requestedDateString}`);
+            logger.info(`Usando fecha objetivo proporcionada: ${requestedDateString}`);
             targetDate = new Date(requestedDateString);
         } else {
-            console.log('[ACQUIRE] No se proporcionó fecha, calculando por defecto.');
+            logger.info('No se proporcionó fecha, calculando por defecto.');
             targetDate = calculateDefaultTargetDate();
         }
 
         // 3. LLAMADA A SERVICIOS (ahora en un único bloque try)
-        console.log(`[ACQUIRE] Iniciando adquisición para: ${targetDate.toISOString()}`);
+        logger.info(`Iniciando adquisición para: ${targetDate.toISOString()}`);
         const apiData = await getDataKunna(targetDate); // Pasamos la fecha al servicio
         
-        console.log('[ACQUIRE] Datos de Kunna obtenidos, guardando en DB...');
+        logger.info('Datos de Kunna obtenidos, guardando en DB...');
         const savedData = await database.saveData(apiData, targetDate);
         
-        console.log('[ACQUIRE] Datos guardados con éxito.');
+        logger.info('Datos guardados con éxito.');
 
         // 4. RESPUESTA DE ÉXITO
         res.status(201).json({
@@ -75,9 +77,10 @@ const data = async (req, res) => {
     } catch(err) {
         // 5. MANEJO CENTRALIZADO DE ERRORES
         if (err instanceof z.ZodError) {
+            logger.warn({errors: err.error}, 'Error de validación de cliente');
             return res.status(400).json({ message: 'Petición inválida.', errors: err.errors });
         }
-        console.error('[ACQUIRE] Proceso fallido:', err.message);
+        logger.error(err, 'Proceso fallido:', err.message);
         res.status(500).json({ error: 'Error interno del servidor' });
     }
 };
