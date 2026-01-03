@@ -3,6 +3,8 @@ const path = require("path");
 const { pathToFileURL } = require("url");
 const tf = require("@tensorflow/tfjs");
 const wasmBackend = require("@tensorflow/tfjs-backend-wasm");
+const rootLogger = require('./logger.js');
+const logger = rootLogger.child({service: 'predict-tf-model'});
 
 const MODEL_VERSION = process.env.MODEL_VERSION || "v1.0";
 
@@ -44,13 +46,13 @@ async function initModel(serverUrl) {
 
   await tf.setBackend("wasm");
   await tf.ready();
-  console.log("[TF] Backend:", tf.getBackend());
+  logger.info("Backend:", tf.getBackend());
 
   const modelDir = path.resolve(__dirname, "..", "model");
-  console.log("[TF] Sirviendo modelo desde:", modelDir);
+  logger.info("Sirviendo modelo desde:", modelDir);
 
   const modelUrl = `${serverUrl}/model/model.json`;
-  console.log("[TF] Cargando modelo:", modelUrl);
+  logger.info("Cargando modelo:", modelUrl);
 
   model = await tf.loadGraphModel(modelUrl);
 
@@ -58,9 +60,9 @@ async function initModel(serverUrl) {
   inputDim = model.inputs?.[0]?.shape?.[1] ?? null;
   outputName = model.outputs?.[0]?.name || null;
 
-  console.log("[TF] inputName:", inputName);
-  console.log("[TF] outputName:", outputName);
-  console.log("[TF] inputDim:", inputDim);
+  logger.info("inputName:", inputName);
+  logger.info("outputName:", outputName);
+  logger.info("inputDim:", inputDim);
 
   if (!inputName || !outputName || !inputDim) {
     throw new Error("No se ha podido detectar inputName/outputName/inputDim");
@@ -80,7 +82,7 @@ async function initModel(serverUrl) {
   Xwarm.dispose();
 
   ready = true;
-  console.log("[TF] Modelo listo.");
+  logger.info("Modelo listo.");
 }
 
 /**

@@ -8,9 +8,10 @@ const path = require("path");
 const predictRoutes = require("./routes/predictRoutes");
 const { initModel } = require("./services/tfModelService");
 const { connectDB } = require("./services/database");
+const rootLogger = require('./services/logger.js');
+const logger = rootLogger.child({service: 'predict-server'});
 
 const PORT = process.env.PORT || 3002;
-const MODEL_VERSION = process.env.MODEL_VERSION || "v1.0";
 
 const app = express();
 app.use(express.json());
@@ -29,17 +30,17 @@ const startServer = async () => {
     
     app.listen(PORT, async () => {
       const serverUrl = `http://localhost:${PORT}`;
-      console.log(`[PREDICT] Servicio escuchando en ${serverUrl}`);
+      logger.info(`Servicio escuchando en ${serverUrl}`);
 
       try {
         await initModel(serverUrl);
       } catch (err) {
-        console.error("Error al inicializar modelo:", err);
+        logger.error(err, "Error al inicializar modelo:", err.message);
         process.exit(1);
       }
     });
   } catch(err) {
-    console.log(`[PREDICT] Error conectandose con la DB`, err);
+    logger.error(err, 'Error conectandose con la DB', err.message);
     process.exit(1);
   }
       
