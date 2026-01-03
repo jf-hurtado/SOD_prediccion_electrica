@@ -2,6 +2,8 @@
 require('dotenv').config();
 
 const express = require('express');
+const helmet = require('helmet');
+
 const orchestatorRoutes = require('./routes/orchestatorRoutes');
 const rootLogger = require('./services/logger.js');
 const logger = rootLogger.child({service: 'orchestrator-server'});
@@ -9,6 +11,7 @@ const logger = rootLogger.child({service: 'orchestrator-server'});
 const PORT = process.env.PORT || 8080;
 
 const app = express();
+app.use(helmet());
 app.use(express.json());
 
 app.use('/', orchestatorRoutes);
