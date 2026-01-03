@@ -4,17 +4,15 @@
 require("dotenv").config();
 
 const express = require("express");
-const helmet = require('helmet');
 const path = require("path");
-
 const predictRoutes = require("./routes/predictRoutes");
 const { initModel } = require("./services/tfModelService");
 const { connectDB } = require("./services/database");
 
 const PORT = process.env.PORT || 3002;
+const MODEL_VERSION = process.env.MODEL_VERSION || "v1.0";
 
 const app = express();
-app.use(helmet());
 app.use(express.json());
 
 // Servir la carpeta del modelo TFJS (model/model.json + pesos)
