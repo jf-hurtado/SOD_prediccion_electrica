@@ -1,6 +1,8 @@
 // controllers/predictController.js
 const database = require('../services/database'); 
 const { getModelInfo, predict } = require("../services/tfModelService");
+const rootLogger = require('../services/logger.js');
+const logger = rootLogger.child({service: 'predict-controller'});
 
 function health(req, res) {
   res.json({
@@ -82,7 +84,7 @@ async function doPredict(req, res) {
       latencyMs
     });
   } catch (err) {
-    console.error("Error en /predict:", err);
+    logger.error(err, "Error en /predict:", err.message);
     res.status(500).json({ error: "Internal error" });
   }
 }
@@ -97,7 +99,7 @@ async function getPredict(req, res) {
     res.status(200).json({prediction})
 
   } catch(err) {
-    console.error(`Error en /predict/${id}`, err)
+    logger.error(err, `Error en /predict/${id}`, err.message)
     res.status(500).json({error: 'Error interno del servidor'})
   }
 }

@@ -4,6 +4,8 @@ require('dotenv').config();
 const express = require('express');
 const acquireRoutes = require('./routes/acquireRoutes');
 const { connectDB } = require('./services/database');
+const rootLogger = require('./services/logger');
+const logger = rootLogger.child({service: 'acquire-server'});
 
 const PORT = process.env.PORT || 3001;
 
@@ -17,17 +19,17 @@ const startServer = async () => {
         try {
             await connectDB();
         } catch(err) {
-            console.error('[ACQUIRE DB] ERROR al conectar la DB', err);
+            logger.error(err, 'ERROR al conectar la DB', err.message);
             process.exit(1);
         }
         
         app.listen(PORT, () => {
             const serverURL = `http://localhost:${PORT}`;
-            console.log(`[ACQUIRE] Servidor corriendo en ${serverURL}`);
+            logger.info(`Servidor corriendo en ${serverURL}`);
         });  
 
     } catch(err) {
-        console.error('[ACQUIRE] Error al inicializar el servidor', err);
+        logger.error('Error al inicializar el servidor', err);
         process.exit(1);
     }
 }

@@ -53,7 +53,7 @@ services:
       - PORT=8080
 
   # --- FRONTEND ---
-    # Opción 1: Levantar la versión de Vanilla JS + Nginx (comentada por ahora)
+    # Opción 1: Levantar la versión de Vanilla JS + Nginx 
   # frontend:
   #   build: ./frontend/v1-vanilla-nginx # "Usa la receta de la carpeta v1"
   #   container_name: frontend
@@ -65,7 +65,7 @@ services:
     build: ./frontend/v2-react-spa
     container_name: frontend-react
     ports:
-      - "80:80" # Seguimos usando el puerto 80 para acceder desde http://localhost
+      - "80:80" 
     depends_on:
       - orchestrator
 

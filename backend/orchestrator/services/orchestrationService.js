@@ -1,11 +1,13 @@
 // services/orchestrationService.js
 
 const fetch = require('node-fetch'); 
+const rootLogger = require('./logger.js');
+const logger = rootLogger.child({service: 'orchestrator-orchestration'});
 
 const runOrchestration = async () => {
     try {
         // ACQUIRE
-        console.log('[ORCHESTRATOR] Solicitando nuevos datos a ACQUIRE...');
+        logger.info('Solicitando nuevos datos a ACQUIRE...');
         
         const acquireResponse = await fetch(`${process.env.ACQUIRE_SERVICE_URL}/data`, {
             method: 'POST',
@@ -18,10 +20,10 @@ const runOrchestration = async () => {
         }
 
         const acquireData = await acquireResponse.json();
-        console.log(`[ORCHESTRATOR] Datos recibidos de ACQUIRE. Data ID: ${acquireData.dataId}`);
+        logger.info(`Datos recibidos de ACQUIRE. Data ID: ${acquireData.dataId}`);
 
         // PREDICT
-        console.log('[ORCHESTRATOR] Solicitando predicción a PREDICT...');
+        logger.info('Solicitando predicción a PREDICT...');
 
         const predictBody = {
             features: acquireData.features,
@@ -43,7 +45,7 @@ const runOrchestration = async () => {
         }
 
         const predictData = await predictResponse.json();
-        console.log(`[ORCHESTRATOR] Predicción recibida de PREDICT. Prediction ID: ${predictData.predictionId}`);
+        logger.info(`Predicción recibida de PREDICT. Prediction ID: ${predictData.predictionId}`);
 
         // Respuesta final
         const finalResponse = {
@@ -56,7 +58,7 @@ const runOrchestration = async () => {
         return finalResponse;
 
     } catch (error) {
-        console.error('[ORCHESTRATOR] Error en el flujo de orquestación:', error.message);
+        logger.error(err, 'Error en el flujo de orquestación:', error.message);
         throw error;
     }
 };

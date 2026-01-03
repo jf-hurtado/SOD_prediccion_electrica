@@ -1,6 +1,38 @@
 // controllers/acquireController.js
 const database = require('../services/database');
 const { getDataKunna } = require('../services/kunnaDataAcquisition');
+const { z } = require('zod');
+const rootLogger = require('../services/logger');
+const logger = rootLogger.child({service: 'acquire-controller'});
+
+// Definimos el "contrato" para el body de la petición /data
+const dataRequestSchema = z.object({
+    // 'targetDate' es una propiedad opcional.
+    targetDate: z.string()
+        // Si existe, debe ser un string con formato de fecha y hora válido.
+        .datetime({ message: "El formato de targetDate debe ser un string ISO 8601 (ej: YYYY-MM-DDTHH:mm:ssZ)" })
+        // Hacemos que sea opcional, si no viene no hay error.
+        .optional()
+});
+
+const calculateDefaultTargetDate = () => {
+    const now = new Date();
+    const options = { 
+        timeZone: 'Europe/Madrid', 
+        hour: '2-digit',       
+        hour12: false          
+    };
+    
+    const madridHourString = now.toLocaleString('es-ES', options);
+    const madridHour = parseInt(madridHourString);
+
+    let targetDate = new Date(now);
+    if (madridHour >= 23){
+        targetDate.setDate(now.getDate() + 1);
+    }
+    logger.info(`(Default) La fecha objetivo es ${targetDate.toLocaleDateString()}`);
+    return targetDate; 
+};
 
 const health = (req, res) => {
     res.status(200).json({
@@ -9,40 +41,48 @@ const health = (req, res) => {
     });
 };
 
-// Como no se pasa body no sé cual va a ser la fecha objetivo, es decir,
-// si se va a poder pasar la fecha objetivo por parámetro para hacer la
-// obtención de datos de un día concreto que no sea para hoy o mañana 
 const data = async (req, res) => { 
-    let targetDate;   
-    let apiData;
-    let savedData;
-
     try {
-        console.log('[ACQUIRE] Accediendo a la API externa (kunna)')
-        const result = await getDataKunna();
-        apiData = result.apiData;
-        targetDate = result.targetDate;
+        // 1. VALIDACIÓN con Zod
+        const { targetDate: requestedDateString } = dataRequestSchema.parse(req.body);
 
-    } catch(err) {
-        console.error('[ACQUIRE] Error al obtener datos de Kunna', err);
-        return res.status(500).json({error: 'Error interno  al obtener los datos de kunna'});
-    }
+        // 2. LÓGICA DE DECISIÓN DE FECHA
+        let targetDate;
+        if (requestedDateString) {
+            logger.info(`Usando fecha objetivo proporcionada: ${requestedDateString}`);
+            targetDate = new Date(requestedDateString);
+        } else {
+            logger.info('No se proporcionó fecha, calculando por defecto.');
+            targetDate = calculateDefaultTargetDate();
+        }
 
-    try{
-        savedData = await database.saveData(apiData, targetDate);
-        console.log('[ACQUIRE] Datos guardados con éxito en la DB');
-    } catch(err) {
-        console.error('[ACQUIRE] Error al guardar los datos de kunna en la DB', err);
-        return res.status(500).json({error: 'Error interno en el guardado de datos de kunna en la DB'})
-    }
+        // 3. LLAMADA A SERVICIOS (ahora en un único bloque try)
+        logger.info(`Iniciando adquisición para: ${targetDate.toISOString()}`);
+        const apiData = await getDataKunna(targetDate); // Pasamos la fecha al servicio
+        
+        logger.info('Datos de Kunna obtenidos, guardando en DB...');
+        const savedData = await database.saveData(apiData, targetDate);
+        
+        logger.info('Datos guardados con éxito.');
 
-    res.status(201).json({
+        // 4. RESPUESTA DE ÉXITO
+        res.status(201).json({
             "dataId": savedData._id,
             "features": savedData.features,
             "featureCount": savedData.featureCount,
             "scalerVersion": savedData.scalerVersion,
             "createdAt": savedData.createdAt
         });    
+
+    } catch(err) {
+        // 5. MANEJO CENTRALIZADO DE ERRORES
+        if (err instanceof z.ZodError) {
+            logger.warn({errors: err.error}, 'Error de validación de cliente');
+            return res.status(400).json({ message: 'Petición inválida.', errors: err.errors });
+        }
+        logger.error(err, 'Proceso fallido:', err.message);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
 };
 
 

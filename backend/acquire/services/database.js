@@ -1,11 +1,13 @@
 // services/database.js
 const mongoose = require('mongoose');
 const Data = require('../models/dataModel');
+const rootLogger = require('./logger');
+const logger = rootLogger.child({service: 'acquire-database'});
 
 const connectDB = async () => {
     const connection_string = process.env.MONGO_URI;
     await mongoose.connect(`${connection_string}`);
-    console.log(`[ACQUIRE] Conexion exitosa con la DB en ${connection_string}`)
+    logger.info(`Conexion exitosa con la DB en ${connection_string}`)
 };
 
 const formatData = (data, targetDate) => {
@@ -78,6 +80,9 @@ const saveData = async (data, targetDate) => {
 
     const newData = new Data(formatedData);
     const saved = await newData.save();
+
+    logger.info({ dataId: saved._id }, 'Datos guardados en la DB.');
+
     return saved;
 };
 

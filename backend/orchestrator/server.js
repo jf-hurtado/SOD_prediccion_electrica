@@ -3,6 +3,8 @@ require('dotenv').config();
 
 const express = require('express');
 const orchestatorRoutes = require('./routes/orchestatorRoutes');
+const rootLogger = require('./services/logger.js');
+const logger = rootLogger.child({service: 'orchestrator-server'});
 
 const PORT = process.env.PORT || 8080;
 
@@ -15,11 +17,11 @@ const startServer = async () => {
     try {        
         app.listen(PORT, () => {
             const serverURL = `http://localhost:${PORT}`;
-            console.log(`[ORCHESTATOR] Servidor corriendo en ${serverURL}`);
+            logger.info(`Servidor corriendo en ${serverURL}`);
         });  
 
     } catch(err) {
-        console.error('[ORCHESTATOR] Error al inicializar el servidor', err);
+        logger.error(err, 'Error al inicializar el servidor', err.message);
         process.exit(1);
     }
 }
